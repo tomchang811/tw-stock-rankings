@@ -69,10 +69,23 @@ node scripts/reconcile-streak.mjs
 1. 建立 GitHub repo 並推送本專案。
 2. Settings → Pages → Build and deployment → Source 選 **GitHub Actions**。
 3. Settings → Secrets and variables → Actions 新增 `GEMINI_API_KEY`（要 AI 題材時）。
-4. `.github/workflows/deploy.yml` 會於每個交易日台北 15:30 / 16:30 自動更新並部署，亦可在 Actions 頁手動 `Run workflow`。
+4. `.github/workflows/deploy.yml` 會於每個交易日自動更新並部署，亦可在 Actions 頁手動 `Run workflow`。
 5. 部署後把 `src/app/layout.tsx` 的 `metadataBase` 改成你的 Pages 網址。
 
-> GitHub 排程偶有飄移；若需更準時，可用外部 cron（如 cron-job.org）打 `workflow_dispatch`。
+## 每日自動更新（排程：三層備援）
+
+GitHub 內建排程常會延遲甚至漏跑，故採三層互補，任一層失靈其他層會補上：
+
+1. **cron-job.org 準時主觸發** — 每交易日台北 **15:30** 打 GitHub `workflow_dispatch`。
+   - 目前線上設定：cron-job.org **jobId `7810318`**（標題「台股排行每日觸發 (15:30 TWT 週一-五)」），用一把 GitHub PAT（`repo`）帶 `Authorization` header 呼叫
+     `POST https://api.github.com/repos/twtop50/tw-stock-rankings/actions/workflows/deploy.yml/dispatches`，body `{"ref":"main"}`。
+2. **GitHub 內建排程備援** — `deploy.yml` 另排 **15:30 / 16:00 / 16:30 / 17:00 / 17:30**（台北，週一～五）共 5 班補跑。
+3. **snapshot 自我補跑/略過** — `scripts/snapshot.mjs` 會先判斷「今日交易日資料是否已完整」：
+   - 已完整 → 快速略過（多班不重工、不重複呼叫 AI）
+   - 某班 AI 失敗 → 下一班自動重試補上
+   - 需強制重算：`FORCE=1 node scripts/snapshot.mjs`
+
+> 維護備忘：PAT 換新後，可用 cron-job.org API（`PATCH /jobs/7810318` 的 `extendedData.headers.Authorization`）更新金鑰；`_ref/mkcron.mjs` 為建立該 job 的腳本範本。
 
 ## 免責聲明
 
