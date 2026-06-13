@@ -386,20 +386,19 @@ export default function RankingTable() {
                       >
                         <td className="px-2 py-2.5 text-right align-top sm:px-3">
                           <div className="font-mono text-xs text-slate-500">{rank}</div>
-                          {jumped && (
+                          {row.isNew ? (
+                            <div className="mt-0.5 inline-block rounded bg-amber-400/20 px-1 text-[9px] font-bold tracking-wide text-amber-300">
+                              NEW
+                            </div>
+                          ) : jumped ? (
                             <div className="font-mono text-[10px] font-semibold text-emerald-400">
                               ▲{row.rankChange}
                             </div>
-                          )}
+                          ) : null}
                         </td>
                         {/* 代碼：手機把股名＋題材併入此欄，桌機則只放代碼 */}
                         <td className="px-2 py-2.5 align-top sm:px-3" title={row.name}>
                           <div className="flex items-center gap-1.5">
-                            {row.isNew && (
-                              <span className="rounded bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-300">
-                                NEW
-                              </span>
-                            )}
                             <span className="font-mono font-semibold text-slate-200">{row.symbol}</span>
                             <span className="hidden rounded bg-slate-800 px-1 py-0.5 text-[10px] font-normal text-slate-500 sm:inline">
                               {row.market === "tpex" ? "櫃" : "市"}
