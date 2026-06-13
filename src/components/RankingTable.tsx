@@ -62,8 +62,8 @@ const HIDE_ON_MOBILE = "hidden sm:table-cell";
 
 const COLUMNS: ColumnDef[] = [
   { key: "symbol", label: "代碼", align: "left" },
-  { key: "name", label: "股名", align: "left" },
-  { key: "price", label: "價格", align: "right", hideOnMobile: true },
+  { key: "name", label: "股名", align: "left", hideOnMobile: true }, // 手機併入「代碼」欄
+  { key: "price", label: "價格", align: "right" },
   { key: "changePercent", label: "漲跌幅", align: "right" },
   {
     key: "streak",
@@ -343,7 +343,7 @@ export default function RankingTable() {
               <tr className="border-b border-slate-800">
                 <th
                   scope="col"
-                  className="sticky top-0 z-10 bg-slate-900/95 px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 backdrop-blur"
+                  className="sticky top-0 z-10 bg-slate-900/95 px-2 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500 backdrop-blur sm:px-3"
                 >
                   #
                 </th>
@@ -384,7 +384,7 @@ export default function RankingTable() {
                           row.isNew ? "bg-amber-400/[0.07]" : ""
                         }`}
                       >
-                        <td className="px-3 py-2.5 text-right align-top">
+                        <td className="px-2 py-2.5 text-right align-top sm:px-3">
                           <div className="font-mono text-xs text-slate-500">{rank}</div>
                           {jumped && (
                             <div className="font-mono text-[10px] font-semibold text-emerald-400">
@@ -392,48 +392,53 @@ export default function RankingTable() {
                             </div>
                           )}
                         </td>
-                        <td
-                          className="px-3 py-2.5 font-mono font-semibold text-slate-200"
-                          title={row.name}
-                        >
-                          {row.isNew && (
-                            <span className="mr-1.5 rounded bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-300 align-middle">
-                              NEW
+                        {/* 代碼：手機把股名＋題材併入此欄，桌機則只放代碼 */}
+                        <td className="px-2 py-2.5 align-top sm:px-3" title={row.name}>
+                          <div className="flex items-center gap-1.5">
+                            {row.isNew && (
+                              <span className="rounded bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-300">
+                                NEW
+                              </span>
+                            )}
+                            <span className="font-mono font-semibold text-slate-200">{row.symbol}</span>
+                            <span className="hidden rounded bg-slate-800 px-1 py-0.5 text-[10px] font-normal text-slate-500 sm:inline">
+                              {row.market === "tpex" ? "櫃" : "市"}
                             </span>
-                          )}
-                          {row.symbol}
-                          <span className="ml-1.5 hidden rounded bg-slate-800 px-1 py-0.5 align-middle text-[10px] font-normal text-slate-500 sm:inline">
-                            {row.market === "tpex" ? "櫃" : "市"}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2.5 text-slate-200">
-                          <span className="whitespace-nowrap">{row.name}</span>
-                          {/* 手機隱藏「題材」欄 → 改顯示於股名下方，節省橫向空間 */}
-                          <div className="mt-0.5 text-[10px] font-normal text-slate-500 sm:hidden">
-                            {row.theme || formatSector(row.sector)}
+                          </div>
+                          <div className="mt-0.5 sm:hidden">
+                            <div className="text-xs text-slate-300">{row.name}</div>
+                            <div className="text-[10px] text-slate-500">
+                              {row.theme || formatSector(row.sector)}
+                            </div>
                           </div>
                         </td>
-                        <td className="hidden px-3 py-2.5 text-right font-mono text-slate-200 sm:table-cell">
+                        {/* 股名：桌機獨立欄（手機已併入代碼） */}
+                        <td className="hidden whitespace-nowrap px-2 py-2.5 text-slate-200 sm:table-cell sm:px-3">
+                          {row.name}
+                        </td>
+                        {/* 價格：手機也顯示 */}
+                        <td className="px-2 py-2.5 text-right font-mono text-slate-200 sm:px-3">
                           {formatPrice(row.price)}
                         </td>
                         <td
-                          className={`px-3 py-2.5 text-right font-mono font-medium ${changeColorClass(
+                          className={`px-2 py-2.5 text-right font-mono font-medium sm:px-3 ${changeColorClass(
                             row.changePercent,
                           )}`}
                         >
                           {formatPercent(row.changePercent)}
                         </td>
-                        <td className="hidden px-3 py-2.5 text-right font-mono sm:table-cell">
+                        <td className="hidden px-2 py-2.5 text-right font-mono sm:table-cell sm:px-3">
                           <span className={streakClass(row.streak)}>{row.streak}</span>
                           <span className="ml-0.5 text-[10px] text-slate-600">天</span>
                         </td>
-                        <td className="px-3 py-2.5 text-right font-mono text-emerald-300">
+                        <td className="px-2 py-2.5 text-right font-mono text-emerald-300 sm:px-3">
                           {formatMoney(row.dollarVolume)}
                         </td>
-                        <td className="hidden px-3 py-2.5 text-right font-mono text-slate-300 sm:table-cell">
+                        <td className="hidden px-2 py-2.5 text-right font-mono text-slate-300 sm:table-cell sm:px-3">
                           {formatMoney(row.marketCap)}
                         </td>
-                        <td className="px-3 py-2.5 text-slate-300">
+                        {/* 題材：桌機獨立欄（手機已併入代碼） */}
+                        <td className="hidden px-2 py-2.5 text-slate-300 sm:table-cell sm:px-3">
                           {row.theme || formatSector(row.sector)}
                         </td>
                       </tr>
