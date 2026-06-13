@@ -10,7 +10,7 @@ const OG_IMAGE = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/opengraph-image.png
 
 export const metadata: Metadata = {
   // GitHub Pages 網域；上方 OG_IMAGE 已含 basePath。
-  metadataBase: new URL("https://tomchang811.github.io"),
+  metadataBase: new URL("https://twtop50.github.io"),
   title: SITE_TITLE,
   description: SITE_DESC,
   keywords: ["台股", "上市", "上櫃", "成交值", "成交金額", "排行榜", "Top 50", "題材", "族群", "台積電"],

@@ -1,6 +1,6 @@
 # 台股成交值排行 Top 50
 
-**🔗 線上：https://tomchang811.github.io/tw-stock-rankings/**
+**🔗 線上：https://twtop50.github.io/tw-stock-rankings/**
 
 台股（**上市＋上櫃**）依當日**成交金額**排序的每日排行榜，含 AI 題材／族群分析、今日市場焦點、新進榜雷達、在榜天數與個股走勢。為 **Next.js 靜態網站**，資料由每日排程預先產生為靜態 JSON，部署於 GitHub Pages。
 

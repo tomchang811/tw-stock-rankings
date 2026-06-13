@@ -29,7 +29,7 @@ const OUT_FILE = path.join(ROOT, "public", "rankings.json");
 // 前一份快照（線上）來源，用於計算 isNew / rankChange；可用 env 覆寫成你的 GitHub Pages 網址。
 const PREV_RANKINGS_URL =
   process.env.PREV_RANKINGS_URL ||
-  "https://tomchang811.github.io/tw-stock-rankings/rankings.json";
+  "https://twtop50.github.io/tw-stock-rankings/rankings.json";
 
 /**
  * 取「前一交易日」基準（優先，且最穩）：讀 public/history 下日期 < latestDate 的最新一檔。
