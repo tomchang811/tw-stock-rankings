@@ -205,7 +205,7 @@
       "dollarVolume": 15142202544,
       "marketCap": 75712167774,
       "sector": "其他電子業",
-      "theme": "PCB",
+      "theme": "PCB 鑽針",
       "isNew": false,
       "rankChange": 1,
       "streak": 3
@@ -289,7 +289,7 @@
       "dollarVolume": 10988782290,
       "marketCap": 635408788865,
       "sector": "半導體業",
-      "theme": "半導體設備",
+      "theme": "半導體測試介面",
       "isNew": false,
       "rankChange": 1,
       "streak": 61
@@ -429,7 +429,7 @@
       "dollarVolume": 8253755435,
       "marketCap": 166788952736,
       "sector": "半導體業",
-      "theme": "半導體封測",
+      "theme": "驅動IC 封測",
       "isNew": false,
       "rankChange": 2,
       "streak": 61
@@ -527,7 +527,7 @@
       "dollarVolume": 6639373905,
       "marketCap": 203075423015,
       "sector": "通信網路業",
-      "theme": "矽光子 CPO",
+      "theme": "光通訊",
       "isNew": false,
       "rankChange": 0,
       "streak": 7
@@ -639,7 +639,7 @@
       "dollarVolume": 5692023707,
       "marketCap": 844632499228.5,
       "sector": "塑膠工業",
-      "theme": "塑化",
+      "theme": "塑膠工業",
       "isNew": true,
       "rankChange": null,
       "streak": 1
@@ -702,25 +702,23 @@
     }
   ],
   "asOf": "2026-06-12T13:30:00+08:00",
-  "generatedAt": "2026-06-13T14:19:20.321Z",
+  "generatedAt": "2026-06-13T14:24:24.661Z",
   "source": "twse",
   "aiSource": "gemini",
   "themeSummary": [
     {
       "theme": "半導體封測",
-      "reason": "受惠於先進封裝需求強勁以及記憶體產業復甦，相關供應鏈表現亮眼。",
+      "reason": "受惠於AI晶片需求帶動先進封裝產能利用率提升，以及整體半導體景氣復甦。",
       "symbols": [
         "6239",
-        "3711",
-        "8150",
-        "6147"
+        "3711"
       ],
-      "count": 4,
-      "avgChange": 3.345351849731461
+      "count": 2,
+      "avgChange": 6.405118353647765
     },
     {
       "theme": "記憶體",
-      "reason": "DRAM 價格止跌回升，市場預期需求將逐步復甦，帶動記憶體族群上漲。",
+      "reason": "記憶體產業景氣回溫，DRAM與NAND Flash價格止跌回升，帶動相關供應鏈表現。",
       "symbols": [
         "2344",
         "2408"
@@ -730,7 +728,7 @@
     },
     {
       "theme": "晶圓代工",
-      "reason": "全球半導體景氣有望復甦，晶圓代工龍頭展望樂觀，帶動相關個股走強。",
+      "reason": "全球半導體需求復甦，AI晶片與HPC應用持續成長，帶動晶圓代工訂單能見度提升。",
       "symbols": [
         "2330",
         "2303",
@@ -741,7 +739,7 @@
     },
     {
       "theme": "IP 矽智財",
-      "reason": "AI 晶片設計需求持續增長，IP 矽智財作為關鍵環節，營運展望看好。",
+      "reason": "AI、HPC等高階晶片設計需求強勁，推升IP矽智財授權金與權利金收入成長。",
       "symbols": [
         "3443",
         "3661"
@@ -750,24 +748,24 @@
       "avgChange": 3.9037608827394203
     },
     {
-      "theme": "ABF 載板",
-      "reason": "高階 AI 晶片對 ABF 載板需求增加，產業景氣有望谷底翻揚。",
-      "symbols": [
-        "3037",
-        "8046"
-      ],
-      "count": 2,
-      "avgChange": 3.5537988734405337
-    },
-    {
       "theme": "被動元件",
-      "reason": "庫存調整進入尾聲，部分被動元件廠營運回溫，獲得資金青睞。",
+      "reason": "電子產業庫存調整進入尾聲，加上部分終端需求回溫，帶動被動元件訂單增長。",
       "symbols": [
         "3090",
         "6173"
       ],
       "count": 2,
       "avgChange": 9.905801244037917
+    },
+    {
+      "theme": "ABF 載板",
+      "reason": "AI、HPC等高階應用對ABF載板需求持續增加，儘管短期有庫存壓力，長期展望仍佳。",
+      "symbols": [
+        "3037",
+        "8046"
+      ],
+      "count": 2,
+      "avgChange": 3.5537988734405337
     }
   ],
   "newEntrants": [
@@ -802,7 +800,7 @@
     {
       "symbol": "1303",
       "name": "南亞",
-      "theme": "塑化",
+      "theme": "塑膠工業",
       "changePercent": 9.907120743034055,
       "reason": "AI電子材料轉型發威，5月營收年月雙增，加上石化產品行情飆升。"
     },
