@@ -74,7 +74,7 @@ const COLUMNS: ColumnDef[] = [
   },
   { key: "dollarVolume", label: "成交金額", align: "right" },
   { key: "marketCap", label: "市值", align: "right", hideOnMobile: true },
-  { key: "theme", label: "題材/族群", align: "left", hideOnMobile: true },
+  { key: "theme", label: "題材/族群", align: "left" }, // 手機也顯示（獨立欄，非併入個股）
 ];
 
 function compare(a: StockRow, b: StockRow, key: SortKey, dir: SortDir): number {
@@ -432,8 +432,8 @@ export default function RankingTable() {
                         <td className="hidden px-2 py-2.5 text-right font-mono text-slate-300 sm:table-cell sm:px-3">
                           {formatMoney(row.marketCap)}
                         </td>
-                        {/* 題材：桌機獨立欄（手機已併入代碼） */}
-                        <td className="hidden px-2 py-2.5 text-slate-300 sm:table-cell sm:px-3">
+                        {/* 題材/族群：手機也顯示（獨立欄） */}
+                        <td className="whitespace-nowrap px-2 py-2.5 text-slate-300 sm:px-3">
                           {row.theme || formatSector(row.sector)}
                         </td>
                       </tr>
