@@ -273,7 +273,7 @@ async function main() {
 
   // 摘要：以我方資料計算 count / avgChange，只保留有對應到的成員。
   const bySymbol = new Map(rows.map((r) => [r.symbol, r]));
-  const themeSummary = summaryRaw
+  let themeSummary = summaryRaw
     .map((s) => {
       const symbols = (s.symbols ?? []).filter((sym) => bySymbol.has(sym));
       const changes = symbols.map((sym) => bySymbol.get(sym).changePercent);
@@ -309,6 +309,27 @@ async function main() {
       console.warn(`今日市場焦點失敗：${e.message}`);
     }
   }
+
+  // 防止單次 Gemini 失敗讓既有區塊忽然消失：同一交易日若本次未產出
+  // marketBriefing / themeSummary / 新進榜原因，沿用已存在的上一份（grounded 呼叫較不穩）。
+  try {
+    const prevOut = JSON.parse(await fs.readFile(OUT_FILE, "utf8"));
+    if (typeof prevOut.asOf === "string" && prevOut.asOf.slice(0, 10) === date) {
+      if (!marketBrief && prevOut.marketBriefing) {
+        marketBrief = prevOut.marketBriefing;
+        console.log("本次無今日市場焦點，沿用既有同日版本");
+      }
+      if (themeSummary.length === 0 && Array.isArray(prevOut.themeSummary) && prevOut.themeSummary.length) {
+        themeSummary = prevOut.themeSummary;
+        console.log("本次無發動題材，沿用既有同日版本");
+      }
+      // 新進榜原因：本次某檔查無原因但舊檔有，沿用該檔原因。
+      if (Array.isArray(prevOut.newEntrants) && prevOut.newEntrants.length) {
+        const prevReason = new Map(prevOut.newEntrants.map((n) => [n.symbol, n.reason]));
+        newEntrants = newEntrants.map((n) => (n.reason ? n : { ...n, reason: prevReason.get(n.symbol) ?? "" }));
+      }
+    }
+  } catch {}
 
   const out = {
     rows,

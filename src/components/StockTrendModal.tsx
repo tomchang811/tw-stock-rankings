@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import TradingViewChart from "./TradingViewChart";
+import { useEffect } from "react";
 import { changeColorClass, formatMoney, formatPercent, formatPrice } from "@/lib/format";
 import type { SymbolTrend, TrendPoint } from "@/types/stock";
 
@@ -102,25 +101,35 @@ function Panel({
 }
 
 export default function StockTrendModal({ symbol, market, name, trend, loading, onClose }: Props) {
-  const [chartExpanded, setChartExpanded] = useState(false);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      // Esc：若日K放大中，先收起放大；否則關閉整個視窗。
-      if (chartExpanded) setChartExpanded(false);
-      else onClose();
+      if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, chartExpanded]);
+  }, [onClose]);
 
   const points = trend?.points ?? [];
   const enough = points.length >= 2;
   const last = points[points.length - 1];
 
+  // TradingView 嵌入式小工具對台股多顯示「僅在 TradingView 可用」，故改為「開新分頁看完整日K」連結。
+  const tvUrl = `https://www.tradingview.com/chart/?symbol=${
+    market === "tpex" ? "TPEX" : "TWSE"
+  }:${symbol}`;
+
+  const TvLink = () => (
+    <a
+      href={tvUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 rounded-md border border-slate-700 px-2.5 py-1 text-xs text-sky-300 hover:bg-slate-800"
+    >
+      在 TradingView 看完整日K ↗
+    </a>
+  );
+
   return (
-    <>
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       onClick={onClose}
@@ -133,7 +142,12 @@ export default function StockTrendModal({ symbol, market, name, trend, loading, 
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-mono text-xl font-bold text-white">{symbol}</h2>
+            <h2 className="font-mono text-xl font-bold text-white">
+              {symbol}
+              <span className="ml-2 rounded bg-slate-800 px-1.5 py-0.5 align-middle text-[11px] font-normal text-slate-400">
+                {market === "tpex" ? "上櫃" : "上市"}
+              </span>
+            </h2>
             <p className="text-sm text-slate-400">{name}</p>
           </div>
           <button
@@ -146,31 +160,27 @@ export default function StockTrendModal({ symbol, market, name, trend, loading, 
           </button>
         </div>
 
-        {/* 日K（TradingView 即時資料，連續完整） */}
-        <div className="relative mb-4">
-          <TradingViewChart symbol={symbol} market={market} />
-          <button
-            type="button"
-            onClick={() => setChartExpanded(true)}
-            className="absolute right-2 top-2 z-10 rounded-md border border-slate-600 bg-slate-900/85 px-2 py-1 text-xs text-slate-200 shadow hover:bg-slate-800"
-            aria-label="放大日K"
-          >
-            ⤢ 放大
-          </button>
-        </div>
-
-        {/* 本站獨有：成交值名次 / 成交金額 走勢（僅含在榜交易日） */}
         {loading ? (
-          <div className="py-8 text-center text-sm text-slate-500">載入名次/成交額走勢中…</div>
+          <div className="py-8 text-center text-sm text-slate-500">載入走勢資料中…</div>
         ) : !enough ? (
-          <div className="rounded-lg border border-slate-800 p-4 text-center text-xs text-slate-500">
-            名次/成交額走勢需累積更多在榜天數（目前 {points.length} 天）。
+          <div className="space-y-3 rounded-lg border border-slate-800 p-4 text-center text-xs text-slate-500">
+            <p>本站走勢需累積更多在榜交易日（目前 {points.length} 天）。</p>
+            <TvLink />
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-xs text-slate-500">
-              以下為本站資料 · 共 {points.length} 個在榜交易日
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-slate-500">本站資料 · 共 {points.length} 個在榜交易日</p>
+              <TvLink />
+            </div>
+            <Panel label="收盤價" value={formatPrice(last.price)}>
+              <LineChart
+                points={points}
+                accessor={(p) => p.price}
+                color="#fbbf24"
+                formatVal={formatPrice}
+              />
+            </Panel>
             <Panel label="成交值名次（越上越前）" value={`#${last.rank}`}>
               <LineChart
                 points={points}
@@ -233,26 +243,5 @@ export default function StockTrendModal({ symbol, market, name, trend, loading, 
         )}
       </div>
     </div>
-
-    {chartExpanded && (
-      <div className="fixed inset-0 z-[60] flex flex-col bg-slate-950 p-3" role="dialog" aria-modal="true">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="font-mono text-sm font-semibold text-white">
-            {symbol} <span className="font-sans font-normal text-slate-400">· {name} · 日K</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setChartExpanded(false)}
-            className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
-          >
-            ⤡ 縮小
-          </button>
-        </div>
-        <div className="min-h-0 flex-1">
-          <TradingViewChart symbol={symbol} market={market} height="100%" />
-        </div>
-      </div>
-    )}
-    </>
   );
 }
