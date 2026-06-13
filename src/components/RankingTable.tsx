@@ -61,8 +61,8 @@ interface ColumnDef {
 const HIDE_ON_MOBILE = "hidden sm:table-cell";
 
 const COLUMNS: ColumnDef[] = [
-  { key: "symbol", label: "代碼", align: "left" },
-  { key: "name", label: "股名", align: "left", hideOnMobile: true }, // 手機併入「代碼」欄
+  { key: "symbol", label: "股號", align: "left" },
+  { key: "name", label: "股名", align: "left", hideOnMobile: true }, // 手機併入「股號」欄
   { key: "price", label: "價格", align: "right" },
   { key: "changePercent", label: "漲跌幅", align: "right" },
   {
@@ -405,12 +405,7 @@ export default function RankingTable() {
                               {row.market === "tpex" ? "櫃" : "市"}
                             </span>
                           </div>
-                          <div className="mt-0.5 sm:hidden">
-                            <div className="text-xs text-slate-300">{row.name}</div>
-                            <div className="text-[10px] text-slate-500">
-                              {row.theme || formatSector(row.sector)}
-                            </div>
-                          </div>
+                          <div className="mt-0.5 text-xs text-slate-300 sm:hidden">{row.name}</div>
                         </td>
                         {/* 股名：桌機獨立欄（手機已併入代碼） */}
                         <td className="hidden whitespace-nowrap px-2 py-2.5 text-slate-200 sm:table-cell sm:px-3">
