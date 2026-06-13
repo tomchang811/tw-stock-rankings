@@ -62,6 +62,7 @@ const HIDE_ON_MOBILE = "hidden sm:table-cell";
 
 const COLUMNS: ColumnDef[] = [
   { key: "symbol", label: "代碼", align: "left" },
+  { key: "name", label: "股名", align: "left" },
   { key: "price", label: "價格", align: "right", hideOnMobile: true },
   { key: "changePercent", label: "漲跌幅", align: "right" },
   {
@@ -395,6 +396,9 @@ export default function RankingTable() {
                           <span className="ml-1.5 hidden rounded bg-slate-800 px-1 py-0.5 align-middle text-[10px] font-normal text-slate-500 sm:inline">
                             {row.market === "tpex" ? "櫃" : "市"}
                           </span>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2.5 text-slate-200">
+                          {row.name}
                         </td>
                         <td className="hidden px-3 py-2.5 text-right font-mono text-slate-200 sm:table-cell">
                           {formatPrice(row.price)}
