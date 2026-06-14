@@ -113,20 +113,33 @@ export default function StockTrendModal({ symbol, market, name, trend, loading, 
   const enough = points.length >= 2;
   const last = points[points.length - 1];
 
-  // TradingView 嵌入式小工具對台股多顯示「僅在 TradingView 可用」，故改為「開新分頁看完整日K」連結。
-  const tvUrl = `https://www.tradingview.com/chart/?symbol=${
-    market === "tpex" ? "TPEX" : "TWSE"
-  }:${symbol}`;
+  // 台灣財經站多半禁止 iframe 內嵌，無法直接預覽圖表，故以「開新分頁」深連結為主；
+  // 預覽則用本站自有資料畫的走勢圖。Yahoo 依上市/上櫃帶 .TW/.TWO。
+  const yahooSuffix = market === "tpex" ? "TWO" : "TW";
+  const extLinks: { label: string; href: string }[] = [
+    { label: "奇摩股市", href: `https://tw.stock.yahoo.com/quote/${symbol}.${yahooSuffix}` },
+    { label: "Goodinfo", href: `https://goodinfo.tw/tw/StockDetail.asp?STOCK_ID=${symbol}` },
+    { label: "玩股網線圖", href: `https://www.wantgoo.com/stock/${symbol}/technical-chart` },
+    {
+      label: "TradingView",
+      href: `https://www.tradingview.com/chart/?symbol=${market === "tpex" ? "TPEX" : "TWSE"}:${symbol}`,
+    },
+  ];
 
-  const TvLink = () => (
-    <a
-      href={tvUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 rounded-md border border-slate-700 px-2.5 py-1 text-xs text-sky-300 hover:bg-slate-800"
-    >
-      在 TradingView 看完整日K ↗
-    </a>
+  const ExtLinks = () => (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {extLinks.map((l) => (
+        <a
+          key={l.label}
+          href={l.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 rounded-md border border-slate-700 px-2 py-1 text-xs text-sky-300 hover:bg-slate-800"
+        >
+          {l.label} ↗
+        </a>
+      ))}
+    </div>
   );
 
   return (
@@ -165,13 +178,17 @@ export default function StockTrendModal({ symbol, market, name, trend, loading, 
         ) : !enough ? (
           <div className="space-y-3 rounded-lg border border-slate-800 p-4 text-center text-xs text-slate-500">
             <p>本站走勢需累積更多在榜交易日（目前 {points.length} 天）。</p>
-            <TvLink />
+            <div className="flex justify-center">
+              <ExtLinks />
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-slate-500">本站資料 · 共 {points.length} 個在榜交易日</p>
-              <TvLink />
+            <div className="space-y-2">
+              <p className="text-xs text-slate-500">
+                預覽為本站資料 · 共 {points.length} 個在榜交易日 · 完整看盤請點：
+              </p>
+              <ExtLinks />
             </div>
             <Panel label="收盤價" value={formatPrice(last.price)}>
               <LineChart
