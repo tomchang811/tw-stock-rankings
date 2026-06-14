@@ -25,7 +25,12 @@ export default function NewEntrants({ items }: Props) {
             className="rounded-lg border border-amber-500/30 bg-amber-400/[0.06] p-3 shadow-lg"
           >
             <div className="flex items-baseline justify-between gap-2">
-              <span className="font-mono font-bold text-amber-300">{it.symbol}</span>
+              <div className="flex min-w-0 items-baseline gap-1.5">
+                <span className="shrink-0 font-mono font-bold text-amber-300">{it.symbol}</span>
+                <span className="truncate text-sm text-slate-200" title={it.name}>
+                  {it.name}
+                </span>
+              </div>
               <span
                 className={`shrink-0 font-mono text-sm font-semibold ${changeColorClass(
                   it.changePercent,
@@ -34,10 +39,7 @@ export default function NewEntrants({ items }: Props) {
                 {formatPercent(it.changePercent)}
               </span>
             </div>
-            <div className="mb-1 truncate text-xs text-slate-400" title={it.name}>
-              {it.name}
-            </div>
-            <div className="mb-1 text-[11px] text-slate-500">{it.theme}</div>
+            <div className="mb-1 mt-1 text-[11px] text-slate-500">{it.theme}</div>
             <p className="text-xs leading-relaxed text-slate-300">
               {it.reason || "（無說明）"}
             </p>
