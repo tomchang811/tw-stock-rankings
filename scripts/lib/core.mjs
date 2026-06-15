@@ -77,25 +77,43 @@ export function formatSector(sector) {
 
 // ───────────────────────── HTTP ─────────────────────────
 
-/** 取 JSON，對 429/5xx 與網路錯誤退避重試。台股 OpenAPI 量少，不需 rate-limit。 */
-export async function getJson(url) {
+/**
+ * 取 JSON，對 429/5xx 與網路錯誤退避重試。台股 OpenAPI 量少，不需 rate-limit。
+ *
+ * 兩個關鍵韌性處理（針對 GitHub Actions 上偶發的 `TypeError: terminated` /
+ * `SocketError: other side closed`）：
+ *  1) body 解析（res.json()）在 try 內 await：該錯誤發生在「讀取回應 body」階段，
+ *     若只 `return res.json()` 會在呼叫端才 reject、繞過本函式的重試 —— 等於重試形同虛設。
+ *  2) `Connection: close` + AbortController 逾時：避免 undici 連線池重用到已被對端關閉的
+ *     keep-alive 連線，並讓「卡住的 socket」逾時後改走重試，而非永久 hang 或直接致命。
+ */
+export async function getJson(url, { timeoutMs = 25_000, retries = 4 } = {}) {
   for (let attempt = 0; ; attempt++) {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), timeoutMs);
     try {
       const res = await fetch(url, {
-        headers: { "User-Agent": "tw-stock-rankings/1.0 (+github actions)", Accept: "application/json" },
+        headers: {
+          "User-Agent": "tw-stock-rankings/1.0 (+github actions)",
+          Accept: "application/json",
+          Connection: "close",
+        },
+        signal: ac.signal,
       });
-      if (res.ok) return res.json();
-      if ((res.status === 429 || res.status >= 500) && attempt < 3) {
+      if (res.ok) return await res.json();
+      if ((res.status === 429 || res.status >= 500) && attempt < retries - 1) {
         await sleep(3_000 * (attempt + 1));
         continue;
       }
       throw new Error(`HTTP ${res.status} for ${url}`);
     } catch (e) {
-      if (attempt < 3) {
+      if (attempt < retries - 1) {
         await sleep(3_000 * (attempt + 1));
         continue;
       }
       throw e;
+    } finally {
+      clearTimeout(timer);
     }
   }
 }
@@ -218,11 +236,19 @@ export async function fetchTpexLatest() {
   return (Array.isArray(data) ? data : []).map(normTpex).filter(keepRow);
 }
 
-/** 抓上市＋上櫃當日全市場個股，回傳 { date, rows }（date 取兩市場較大的交易日）。 */
+/**
+ * 抓上市＋上櫃當日全市場個股，回傳「同一交易日」的 { date, rows }。
+ *
+ * 交易日以「上市」為錨：每個交易日一定有上市資料，且 OpenAPI 兩端點偶有一邊落後
+ * （實測證交所 STOCK_DAY_ALL 可能慢一天、櫃買已是新日）；若像舊版取「兩市場較大日期」，
+ * 會把不同交易日的上市/上櫃混成一份髒資料。故以上市日期為準，上櫃只採同日者。
+ */
 export async function fetchAllLatest() {
   const [twse, tpex] = await Promise.all([fetchTwseLatest(), fetchTpexLatest()]);
-  const rows = [...twse, ...tpex];
-  const date = rows.map((r) => r.date).filter(Boolean).sort().pop() ?? fmtDate(new Date());
+  const twseDate = twse.map((r) => r.date).filter(Boolean).sort().pop();
+  const tpexDate = tpex.map((r) => r.date).filter(Boolean).sort().pop();
+  const date = twseDate ?? tpexDate ?? fmtDate(new Date());
+  const rows = [...twse.filter((r) => r.date === date), ...tpex.filter((r) => r.date === date)];
   return { date, rows };
 }
 
