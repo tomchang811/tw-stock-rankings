@@ -125,6 +125,34 @@ function parseJsonObjects(text) {
 }
 
 /**
+ * 容錯解析「今日市場焦點」單一 JSON 物件。grounded 回應偶有未跳脫的內層引號（新聞標題常見），
+ * 導致整包 JSON.parse 失敗；此時改逐欄位/逐事件搶救：highlights 以邊界正則抽出，
+ * eventsPast / eventsUpcoming 以扁平物件正則逐筆解析（壞的單筆丟棄，不連累整份焦點）。
+ */
+function parseBriefing(text) {
+  const clean = text.replace(/```json|```/g, "");
+  const s = clean.indexOf("{");
+  const e = clean.lastIndexOf("}");
+  if (s >= 0 && e > s) {
+    try {
+      return JSON.parse(clean.slice(s, e + 1)); // 乾淨優先
+    } catch {}
+  }
+  const highlights = (clean.match(/"highlights"\s*:\s*"([\s\S]*?)"\s*,\s*"events/) || [])[1] || "";
+  const grabArr = (key) => {
+    const m = clean.match(new RegExp(`"${key}"\\s*:\\s*\\[([\\s\\S]*?)\\]`));
+    const out = [];
+    for (const obj of (m?.[1] ?? "").match(/\{[^{}]*\}/g) ?? []) {
+      try {
+        out.push(JSON.parse(obj));
+      } catch {}
+    }
+    return out;
+  };
+  return { highlights, eventsPast: grabArr("eventsPast"), eventsUpcoming: grabArr("eventsUpcoming") };
+}
+
+/**
  * 用 Gemini + Google 搜尋產生「今日市場焦點」：成交重點（highlights）+
  * 已發生（eventsPast）與即將到來（eventsUpcoming）的重大事件。失敗則丟例外（後備為 null）。
  */
@@ -163,12 +191,9 @@ ${themeLines}
   };
   const data = await callGemini(apiKey, body);
   const text = candidateText(data);
-  const s = text.indexOf("{");
-  const e = text.lastIndexOf("}");
-  if (s < 0 || e <= s) throw new Error("市場焦點回應無 JSON 物件");
-  const parsed = JSON.parse(text.slice(s, e + 1));
+  const parsed = parseBriefing(text);
   const str = (v) => (typeof v === "string" ? v.trim() : "");
-  return {
+  const out = {
     highlights: str(parsed.highlights),
     eventsPast: (Array.isArray(parsed.eventsPast) ? parsed.eventsPast : [])
       .filter((x) => x && (x.title || x.detail))
@@ -179,6 +204,11 @@ ${themeLines}
       .slice(0, 5)
       .map((x) => ({ date: str(x.date), title: str(x.title), detail: str(x.detail) })),
   };
+  // 全空視為失敗（交給下一班重試或沿用既有同日版本），避免渲染空白焦點卡。
+  if (!out.highlights && out.eventsPast.length === 0 && out.eventsUpcoming.length === 0) {
+    throw new Error("市場焦點回應無可解析內容");
+  }
+  return out;
 }
 
 async function main() {
@@ -197,10 +227,11 @@ async function main() {
       const prev = JSON.parse(await fs.readFile(OUT_FILE, "utf8"));
       const prevDate = typeof prev.asOf === "string" ? prev.asOf.slice(0, 10) : "";
       const hasRows = (prev.rows?.length ?? 0) > 0;
-      // 有金鑰時，拿到「市場焦點或發動題材」其一即視為已完成（避免某段 AI 一直失敗時每班重跑狂打 429）。
-      const aiDone = geminiKey
-        ? !!prev.marketBriefing || (prev.themeSummary?.length ?? 0) > 0
-        : hasRows;
+      // 有金鑰時，必須已產出「今日市場焦點」(marketBriefing) 才算完成。它最易因 grounded
+      // 回應 JSON 破損而失敗；若改用「焦點或題材其一」當完成條件，會讓失敗的市場焦點被永久
+      // 略過、再也不補。多班次（cron-job.org 15:30/16:30/17:30）會逐班重試直到焦點產出；
+      // 即使某天始終失敗，最多也只重跑 3 班，不致狂打 429。
+      const aiDone = geminiKey ? !!prev.marketBriefing : hasRows;
       if (prevDate === date && hasRows && aiDone) {
         console.log(`今日（${date}）資料已完整，略過重算（補跑機制）。`);
         return;
