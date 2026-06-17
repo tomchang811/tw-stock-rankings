@@ -76,10 +76,10 @@ node scripts/reconcile-streak.mjs
 
 GitHub 內建排程常會延遲甚至漏跑，故採三層互補，任一層失靈其他層會補上：
 
-1. **cron-job.org 準時主觸發** — 每交易日台北 **15:30** 打 GitHub `workflow_dispatch`。
-   - 目前線上設定：cron-job.org **jobId `7810318`**（標題「台股排行每日觸發 (15:30 TWT 週一-五)」），用一把 GitHub PAT（`repo`）帶 `Authorization` header 呼叫
+1. **cron-job.org 準時主觸發** — 每交易日台北 **每 30 分一班、15:00–18:30 共 8 班** 打 GitHub `workflow_dispatch`。證交所盤後行情約 16:30 才完整公布，故資料多半 16:30–17:30 到位；密集排班是為了「資料一就緒就盡快發布」，並把單一班次遇上游暫態壞檔的代價壓到 ≤30 分（2026-06-17 從 60 分/3 班調密，當天因 16:30 上櫃回傳截斷 JSON 而硬等到 17:30）。
+   - 目前線上設定：cron-job.org **jobId `7810318`**，`schedule.hours:[15,16,17,18]`、`minutes:[0,30]`，用一把 GitHub PAT（`repo`）帶 `Authorization` header 呼叫
      `POST https://api.github.com/repos/twtop50/tw-stock-rankings/actions/workflows/deploy.yml/dispatches`，body `{"ref":"main"}`。
-2. **GitHub 內建排程備援** — `deploy.yml` 另排 **15:30 / 16:00 / 16:30 / 17:00 / 17:30**（台北，週一～五）共 5 班補跑。
+2. **GitHub 內建排程備援** — `deploy.yml` 另排 **15:30 / 16:00 / 16:30 / 17:00 / 17:30**（台北，週一～五）共 5 班；但 GitHub 內建 cron 實測常整批漏觸發，僅當 best-effort，真正可靠的是第 1 層。
 3. **snapshot 自我補跑/略過** — `scripts/snapshot.mjs` 會先判斷「今日交易日資料是否已完整」：
    - 已完整 → 快速略過（多班不重工、不重複呼叫 AI）
    - 某班 AI 失敗 → 下一班自動重試補上

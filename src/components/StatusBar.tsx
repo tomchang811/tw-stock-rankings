@@ -65,7 +65,7 @@ export default function StatusBar({ asOf, generatedAt, source, aiSource, notice,
       {loading && <span className="text-xs text-slate-500">更新中…</span>}
 
       <p className="w-full text-xs leading-relaxed text-slate-500">
-        ℹ️ 顯示最近一個台股交易日的收盤資料；每個交易日約 <span className="text-slate-400">15:00–16:00</span>（台北）於收盤後自動更新。
+        ℹ️ 顯示最近一個台股交易日的收盤資料；證交所盤後行情約 16:30 起才完整公布，故每個交易日約 <span className="text-slate-400">16:30–18:00</span>（台北）自動更新，建議此時間後查看。
       </p>
 
       {isStale && (
